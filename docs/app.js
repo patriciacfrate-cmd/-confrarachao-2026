@@ -91,20 +91,39 @@ async function save() {
   }
 }
 
+function loginIdentifier(value) {
+  const identifier = value.trim();
+  if (identifier.includes('@')) return {email: identifier};
+  if (!/^\+?[0-9\s().-]+$/.test(identifier)) return null;
+
+  const digits = identifier.replace(/\D/g, '');
+  if (identifier.startsWith('+')) {
+    return /^[1-9]\d{7,14}$/.test(digits) ? {phone: '+' + digits} : null;
+  }
+  if (/^\d{2}9\d{8}$/.test(digits)) return {phone: '+55' + digits};
+  if (/^55\d{2}9\d{8}$/.test(digits)) return {phone: '+' + digits};
+  return null;
+}
+
 if (client) {
   loginForm.addEventListener('submit', async event => {
     event.preventDefault();
+    const identifier = loginIdentifier(document.querySelector('#login-identifier').value);
+    if (!identifier) {
+      message('Informe seu e-mail ou um número de celular com DDD.');
+      return;
+    }
     const button = loginForm.querySelector('button');
     button.disabled = true;
     message('Entrando…');
     try {
       const {error} = await client.auth.signInWithPassword({
-        email: document.querySelector('#email').value.trim(),
+        ...identifier,
         password: document.querySelector('#password').value
       });
       loginForm.reset();
       if (error) {
-        message('Não foi possível entrar. Confira o e-mail e a senha e tente novamente.');
+        message('Não foi possível entrar. Confira o e-mail ou celular e a senha e tente novamente.');
         return;
       }
       message('');
