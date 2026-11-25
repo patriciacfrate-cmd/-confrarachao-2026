@@ -97,12 +97,12 @@ function loginIdentifier(value) {
   if (!/^\+?[0-9\s().-]+$/.test(identifier)) return null;
 
   const digits = identifier.replace(/\D/g, '');
-  if (identifier.startsWith('+')) {
-    return /^[1-9]\d{7,14}$/.test(digits) ? {phone: '+' + digits} : null;
-  }
-  if (/^\d{2}9\d{8}$/.test(digits)) return {phone: '+55' + digits};
-  if (/^55\d{2}9\d{8}$/.test(digits)) return {phone: '+' + digits};
-  return null;
+  const phone = /^\d{2}9\d{8}$/.test(digits) && !identifier.startsWith('+')
+    ? '55' + digits
+    : digits;
+  if (!/^55\d{2}9\d{8}$/.test(phone)) return null;
+
+  return {email: 'celular-' + phone + '@acesso.confrarachao.invalid'};
 }
 
 if (client) {
